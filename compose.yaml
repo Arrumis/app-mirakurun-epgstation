@@ -1,0 +1,55 @@
+services:
+  mirakurun:
+    image: chinachu/mirakurun
+    restart: unless-stopped
+    ports:
+      - "${MIRAKURUN_PORT:-40772}:40772"
+      - "${MIRAKURUN_DEBUG_PORT:-9229}:9229"
+    environment:
+      TZ: "${TZ:-Asia/Tokyo}"
+    volumes:
+      - "${HOST_DATA_DIR:-./data}/mirakurun/conf:/app-config"
+      - "${HOST_DATA_DIR:-./data}/mirakurun/data:/app-data"
+    logging:
+      driver: json-file
+      options:
+        max-file: "1"
+        max-size: 10m
+
+  epg-sql:
+    image: mariadb:10.5
+    restart: unless-stopped
+    environment:
+      MYSQL_USER: "${EPG_DB_USER:-epgstation}"
+      MYSQL_PASSWORD: "${EPG_DB_PASSWORD:-change-me}"
+      MYSQL_ROOT_PASSWORD: "${EPG_DB_ROOT_PASSWORD:-change-me-root}"
+      MYSQL_DATABASE: "${EPG_DB_NAME:-epgstation}"
+      TZ: "${TZ:-Asia/Tokyo}"
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --performance-schema=false --expire_logs_days=1
+    volumes:
+      - "${HOST_DATA_DIR:-./data}/mariadb:/var/lib/mysql"
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  epgstation:
+    build:
+      context: "./epgstation"
+      dockerfile: "debian.Dockerfile"
+    restart: unless-stopped
+    depends_on:
+      - mirakurun
+      - epg-sql
+    environment:
+      TZ: "${TZ:-Asia/Tokyo}"
+    ports:
+      - "${EPGSTATION_PORT:-8888}:8888"
+      - "${EPGSTATION_PREVIEW_PORT:-8889}:8889"
+    user: "${EPGSTATION_UID:-1000}:${EPGSTATION_GID:-1000}"
+    volumes:
+      - "${HOST_DATA_DIR:-./data}/epgstation/config:/app/config"
+      - "${HOST_DATA_DIR:-./data}/epgstation/data:/app/data"
+      - "${HOST_DATA_DIR:-./data}/epgstation/thumbnail:/app/thumbnail"
+      - "${HOST_DATA_DIR:-./data}/epgstation/logs:/app/logs"
+      - "${RECORDED_DIR:-./recorded}:/app/recorded"
