@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [[ -f ".env.local" ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source ".env.local"
+  set +a
+fi
+
 DATA_DIR="${1:-${HOST_DATA_DIR:-./data}}"
 REC_DIR="${2:-${RECORDED_DIR:-./recorded}}"
 LEGACY_CONF_DIR="${LEGACY_MIRAKURUN_CONF_DIR:-}"
