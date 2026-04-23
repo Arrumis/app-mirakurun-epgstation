@@ -1,0 +1,12 @@
+logLevel: 1
+path: /var/run/mirakurun.sock
+port: __MIRAKURUN_PORT__
+allowIPv4CidrRanges:
+  - 10.0.0.0/8
+  - 127.0.0.0/8
+  - 172.16.0.0/12
+  - 192.168.0.0/16
+allowIPv6CidrRanges:
+  - fc00::/7
+disableIPv6: true
+hostname: __MIRAKURUN_HOSTNAME__

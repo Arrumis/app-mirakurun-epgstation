@@ -1,0 +1,5 @@
+# Replace this file with channels for your own broadcast area.
+# If you already have a working Mirakurun setup, set LEGACY_MIRAKURUN_CONF_DIR
+# before running ./scripts/init-data-dirs.sh and your existing channels.yml
+# will be copied in automatically.
+[]

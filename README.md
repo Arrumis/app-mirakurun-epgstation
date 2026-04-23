@@ -48,9 +48,11 @@ docker compose --env-file .env.local -f compose.yaml -f compose.hardware.example
 
 初回実行時は config テンプレートを data 側へコピーします。
 
+既存の Mirakurun 設定を引き継ぎたい場合は、`.env.local` に `LEGACY_MIRAKURUN_CONF_DIR=/path/to/mirakurun/conf` を入れてから実行します。`server.yml` `channels.yml` `tuners.yml` が自動で取り込まれます。
+
 ## 注意
 
 - ホスト側の `pcscd` 停止やチューナードライバ導入は必要です
 - hardware override を使わないベース compose では、ハードウェア依存の機能は有効になりません
 - 旧構成の external network / 固定 IP はベース compose から外しています
-
+- `channels.yml` と `tuners.yml` は地域とデバイスに依存します。repo の example は空のプレースホルダなので、本格運用では自分の環境に合わせて置き換えてください
