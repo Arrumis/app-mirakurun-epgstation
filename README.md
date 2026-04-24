@@ -2,6 +2,10 @@
 
 Mirakurun と EPGStation を独立リポジトリとして扱うための新しい正本候補です。upstream `docker-mirakurun-epgstation` をベースにしつつ、実データとホスト依存設定を repo 外へ出しやすい形にしています。
 
+## 日本語メモ
+
+GitHub のコミット一覧が英語で分かりにくい場合は、[コミット履歴の日本語メモ](docs/COMMIT_HISTORY_JA.md) を見てください。
+
 ## 方針
 
 - ベースの `compose.yaml` は portable に保つ
