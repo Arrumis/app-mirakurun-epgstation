@@ -50,6 +50,55 @@ escape_sed_replacement() {
   printf '%s' "$1" | sed -e 's/[\\/&]/\\&/g'
 }
 
+yaml_list_items() {
+  local values="$1"
+  local value
+
+  for value in ${values}; do
+    [[ -n "${value}" ]] || continue
+    printf '  - %s\n' "${value}"
+  done
+}
+
+replace_yaml_list_block() {
+  local file_path="$1"
+  local key="$2"
+  local values="$3"
+  local tmp_file
+
+  tmp_file="$(mktemp)"
+  awk -v key="${key}" -v values="${values}" '
+    BEGIN {
+      list_count = split(values, list_values, /[[:space:]]+/)
+    }
+    $0 == key ":" {
+      print key ":"
+      for (i = 1; i <= list_count; i++) {
+        if (list_values[i] != "") {
+          print "  - " list_values[i]
+        }
+      }
+      skipping = 1
+      next
+    }
+    skipping && $0 ~ /^  - / {
+      next
+    }
+    {
+      skipping = 0
+      print
+    }
+  ' "${file_path}" >"${tmp_file}"
+  mv "${tmp_file}" "${file_path}"
+
+  if ! grep -q "^${key}:" "${file_path}"; then
+    {
+      printf '\n%s:\n' "${key}"
+      yaml_list_items "${values}"
+    } >>"${file_path}"
+  fi
+}
+
 copy_from_legacy_or_sample() {
   local filename="$1"
   local sample="$2"
@@ -95,6 +144,7 @@ apply_mirakurun_server_overrides() {
   local dst="${DATA_DIR}/mirakurun/conf/server.yml"
   local hostname="${MIRAKURUN_HOSTNAME:-}"
   local port="${MIRAKURUN_PORT:-}"
+  local allow_ipv4_ranges="${MIRAKURUN_ALLOW_IPV4_CIDR_RANGES:-10.0.0.0/8 127.0.0.0/8 172.16.0.0/12 192.168.0.0/16}"
 
   [[ -f "${dst}" ]] || return 0
 
@@ -117,6 +167,10 @@ apply_mirakurun_server_overrides() {
       printf 'port: %s\n' "${port}" >>"${dst}"
     fi
   fi
+
+  # 旧 server.yml を使った場合でも、Docker 内部と家庭内LANからのアクセスを許可する。
+  # 現在の検証PCは 192.168.2.x なので、既定値の 192.168.0.0/16 に含めている。
+  replace_yaml_list_block "${dst}" "allowIPv4CidrRanges" "${allow_ipv4_ranges}"
 }
 
 render_epgstation_config() {
