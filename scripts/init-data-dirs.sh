@@ -11,8 +11,21 @@ fi
 DATA_DIR="${1:-${HOST_DATA_DIR:-./data}}"
 REC_DIR="${2:-${RECORDED_DIR:-./recorded}}"
 LEGACY_CONF_DIR="${LEGACY_MIRAKURUN_CONF_DIR:-}"
+INSTALL_UID="${EPGSTATION_UID:-$(id -u)}"
+INSTALL_GID="${EPGSTATION_GID:-$(id -g)}"
 
-mkdir -p \
+ensure_dir() {
+  local dir_path="$1"
+
+  if mkdir -p "${dir_path}" 2>/dev/null; then
+    return 0
+  fi
+
+  echo "通常ユーザーで作成できないため sudo で作成します: ${dir_path}"
+  sudo install -d -o "${INSTALL_UID}" -g "${INSTALL_GID}" -m 0755 "${dir_path}"
+}
+
+for dir_path in \
   "${DATA_DIR}/mirakurun/conf" \
   "${DATA_DIR}/mirakurun/data" \
   "${DATA_DIR}/mariadb" \
@@ -21,6 +34,9 @@ mkdir -p \
   "${DATA_DIR}/epgstation/logs" \
   "${DATA_DIR}/epgstation/thumbnail" \
   "${REC_DIR}"
+do
+  ensure_dir "${dir_path}"
+done
 
 copy_if_missing() {
   local src="$1"
