@@ -91,6 +91,34 @@ render_mirakurun_server_config() {
     "${dst}"
 }
 
+apply_mirakurun_server_overrides() {
+  local dst="${DATA_DIR}/mirakurun/conf/server.yml"
+  local hostname="${MIRAKURUN_HOSTNAME:-}"
+  local port="${MIRAKURUN_PORT:-}"
+
+  [[ -f "${dst}" ]] || return 0
+
+  # 既存データを引き継いだ場合でも、親 installer から明示された公開名は反映する。
+  # ここが localhost のままだと、ブラウザUIや外部連携で localhost 前提に見えるため混乱しやすい。
+  if [[ -n "${hostname}" ]]; then
+    hostname="$(escape_sed_replacement "${hostname}")"
+    if grep -q '^hostname:' "${dst}"; then
+      sed -i -e "s|^hostname:.*|hostname: ${hostname}|" "${dst}"
+    else
+      printf '\nhostname: %s\n' "${hostname}" >>"${dst}"
+    fi
+  fi
+
+  if [[ -n "${port}" ]]; then
+    port="$(escape_sed_replacement "${port}")"
+    if grep -q '^port:' "${dst}"; then
+      sed -i -e "s|^port:.*|port: ${port}|" "${dst}"
+    else
+      printf 'port: %s\n' "${port}" >>"${dst}"
+    fi
+  fi
+}
+
 render_epgstation_config() {
   local dst="${DATA_DIR}/epgstation/config/config.yml"
   local db_host
@@ -128,6 +156,7 @@ copy_if_missing "./epgstation/config/epgUpdaterLogConfig.sample.yml" "${DATA_DIR
 copy_if_missing "./epgstation/config/serviceLogConfig.sample.yml" "${DATA_DIR}/epgstation/config/serviceLogConfig.yml"
 render_epgstation_config
 render_mirakurun_server_config
+apply_mirakurun_server_overrides
 copy_from_legacy_or_sample "channels.yml" "./mirakurun/conf/channels.yml.example"
 copy_from_legacy_or_sample "tuners.yml" "./mirakurun/conf/tuners.yml.example"
 
