@@ -33,7 +33,7 @@ patch_px4_driver_source() {
   fi
 
   if grep -q 'ctx->class = class_create(THIS_MODULE, name);' "${chrdev_file}"; then
-    perl -0pi -e 's|ctx->class = class_create\\(THIS_MODULE, name\\);|#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 4, 0)\\n\\tctx->class = class_create(THIS_MODULE, name);\\n#else\\n\\tctx->class = class_create(name);\\n#endif|' "${chrdev_file}"
+    perl -0pi -e 's|ctx->class = class_create\(THIS_MODULE, name\);|#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 4, 0)\n\tctx->class = class_create(THIS_MODULE, name);\n#else\n\tctx->class = class_create(name);\n#endif|' "${chrdev_file}"
   fi
 }
 
