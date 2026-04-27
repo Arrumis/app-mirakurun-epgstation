@@ -1,0 +1,17 @@
+services:
+  mirakurun:
+    cap_add:
+      - SYS_ADMIN
+      - SYS_NICE
+    devices:
+      # PX-W3U4 の非公式ドライバ px4_drv が作る chardev です。
+      # /dev/dvb ではなく、この /dev/px4video0..3 を Mirakurun へ渡します。
+      - /dev/bus:/dev/bus
+      - /dev/px4video0:/dev/px4video0
+      - /dev/px4video1:/dev/px4video1
+      - /dev/px4video2:/dev/px4video2
+      - /dev/px4video3:/dev/px4video3
+
+  epgstation:
+    devices:
+      - /dev/dri:/dev/dri

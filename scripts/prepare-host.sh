@@ -9,6 +9,8 @@ fi
 PACKAGES=(
   dkms
   git
+  usbutils
+  pciutils
   dvb-tools
   curl
   libpcsclite-dev
@@ -32,6 +34,32 @@ else
   echo "Required host packages are already installed."
 fi
 
+hardware_profile="${TUNER_HARDWARE_PROFILE:-auto}"
+if [[ "${hardware_profile}" == "auto" && -x "./scripts/detect-tuner-hardware.sh" ]]; then
+  hardware_profile="$(./scripts/detect-tuner-hardware.sh)"
+fi
+
+echo "Detected tuner hardware profile: ${hardware_profile}"
+
+case "${hardware_profile}" in
+  pxw3u4)
+    ./scripts/install-pxw3u4-host-driver.sh
+    ;;
+  dvb|pt3)
+    if [[ -e /dev/dvb ]]; then
+      echo "Detected /dev/dvb"
+    else
+      echo "WARNING: /dev/dvb was not found. PT3/DVB devices are not currently visible on this host."
+    fi
+    ;;
+  unknown)
+    echo "WARNING: tuner hardware was not detected. Connect PT3/DVB or PX-W3U4 and rerun this script."
+    ;;
+  *)
+    echo "WARNING: unknown TUNER_HARDWARE_PROFILE=${hardware_profile}"
+    ;;
+esac
+
 for unit in pcscd.socket pcscd.service; do
   if systemctl list-unit-files "${unit}" >/dev/null 2>&1; then
     sudo systemctl stop "${unit}" || true
@@ -39,12 +67,6 @@ for unit in pcscd.socket pcscd.service; do
     echo "Stopped and disabled ${unit}"
   fi
 done
-
-if [[ -e /dev/dvb ]]; then
-  echo "Detected /dev/dvb"
-else
-  echo "WARNING: /dev/dvb was not found. Tuner devices are not currently visible on this host."
-fi
 
 if [[ -e /dev/dri ]]; then
   echo "Detected /dev/dri"

@@ -1,6 +1,11 @@
 services:
   mirakurun:
-    image: chinachu/mirakurun
+    image: "${MIRAKURUN_IMAGE:-app-mirakurun-epgstation-mirakurun:local}"
+    build:
+      context: "./mirakurun"
+      dockerfile: "Dockerfile"
+      args:
+        MIRAKURUN_BASE_IMAGE: "${MIRAKURUN_BASE_IMAGE:-chinachu/mirakurun}"
     restart: unless-stopped
     ports:
       - "${MIRAKURUN_PORT:-40772}:40772"

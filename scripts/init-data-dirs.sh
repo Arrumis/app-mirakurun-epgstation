@@ -116,6 +116,57 @@ copy_from_legacy_or_sample() {
   copy_if_missing "${sample}" "${destination}"
 }
 
+detect_tuner_hardware_profile() {
+  local profile="${TUNER_HARDWARE_PROFILE:-auto}"
+
+  if [[ "${profile}" != "auto" ]]; then
+    printf '%s\n' "${profile}"
+    return 0
+  fi
+
+  if [[ -x "./scripts/detect-tuner-hardware.sh" ]]; then
+    ./scripts/detect-tuner-hardware.sh
+  else
+    printf 'unknown\n'
+  fi
+}
+
+apply_tuner_profile_config() {
+  local profile
+  local tuners_file="${DATA_DIR}/mirakurun/conf/tuners.yml"
+  local tuners_body
+
+  profile="$(detect_tuner_hardware_profile)"
+  echo "Detected tuner hardware profile: ${profile}"
+
+  case "${profile}" in
+    pxw3u4)
+      tuners_body=""
+      if [[ -f "${tuners_file}" ]]; then
+        tuners_body="$(
+          awk '
+            /^[[:space:]]*#/ { next }
+            /^[[:space:]]*$/ { next }
+            { gsub(/[[:space:]]/, "", $0); printf "%s", $0 }
+          ' "${tuners_file}"
+        )"
+      fi
+
+      if [[ ! -f "${tuners_file}" || "${tuners_body}" == "[]" || "${FORCE_TUNERS:-0}" == "1" ]]; then
+        cp "./mirakurun/conf/tuners.pxw3u4.yml.example" "${tuners_file}"
+        echo "Applied PX-W3U4 tuners.yml: ${tuners_file}"
+      else
+        echo "KEEP tuners.yml already exists: ${tuners_file}"
+      fi
+      ;;
+    dvb|pt3|unknown)
+      ;;
+    *)
+      echo "WARNING: unknown TUNER_HARDWARE_PROFILE=${profile}"
+      ;;
+  esac
+}
+
 render_mirakurun_server_config() {
   local dst="${DATA_DIR}/mirakurun/conf/server.yml"
   local hostname
@@ -213,6 +264,7 @@ render_mirakurun_server_config
 apply_mirakurun_server_overrides
 copy_from_legacy_or_sample "channels.yml" "./mirakurun/conf/channels.yml.example"
 copy_from_legacy_or_sample "tuners.yml" "./mirakurun/conf/tuners.yml.example"
+apply_tuner_profile_config
 
 echo "Initialized Mirakurun/EPGStation directories under: ${DATA_DIR}"
 echo "Recorded directory: ${REC_DIR}"
