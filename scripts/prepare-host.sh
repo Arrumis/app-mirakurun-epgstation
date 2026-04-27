@@ -6,6 +6,14 @@ if ! command -v apt-get >/dev/null 2>&1; then
   exit 1
 fi
 
+run_sudo() {
+  if [[ -n "${SUDO_PASSWORD:-}" ]]; then
+    printf '%s\n' "${SUDO_PASSWORD}" | sudo -S "$@"
+  else
+    sudo "$@"
+  fi
+}
+
 PACKAGES=(
   dkms
   git
@@ -28,8 +36,8 @@ done
 
 if [[ "${#missing_packages[@]}" -gt 0 ]]; then
   echo "Installing host packages: ${missing_packages[*]}"
-  sudo apt-get update
-  sudo apt-get install -y "${missing_packages[@]}"
+  run_sudo apt-get update
+  run_sudo apt-get install -y "${missing_packages[@]}"
 else
   echo "Required host packages are already installed."
 fi
@@ -62,8 +70,8 @@ esac
 
 for unit in pcscd.socket pcscd.service; do
   if systemctl list-unit-files "${unit}" >/dev/null 2>&1; then
-    sudo systemctl stop "${unit}" || true
-    sudo systemctl disable "${unit}" || true
+    run_sudo systemctl stop "${unit}" || true
+    run_sudo systemctl disable "${unit}" || true
     echo "Stopped and disabled ${unit}"
   fi
 done
