@@ -32,7 +32,7 @@ services:
       TZ: "${TZ:-Asia/Tokyo}"
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --performance-schema=false --expire_logs_days=1
     volumes:
-      - "${EPG_DB_DIR:-${HOST_DATA_DIR:-./data}/mariadb}:/var/lib/mysql"
+      - "${EPG_DB_DIR:-${HOST_DATA_DIR:-./data}/mirakurun/mira_sql}:/var/lib/mysql"
     logging:
       options:
         max-size: "10m"

@@ -13,6 +13,13 @@ REC_DIR="${2:-${RECORDED_DIR:-./recorded}}"
 LEGACY_CONF_DIR="${LEGACY_MIRAKURUN_CONF_DIR:-}"
 INSTALL_UID="${EPGSTATION_UID:-$(id -u)}"
 INSTALL_GID="${EPGSTATION_GID:-$(id -g)}"
+MIRAKURUN_CONF_DIR="${MIRAKURUN_CONFIG_DIR:-${DATA_DIR}/mirakurun/conf}"
+MIRAKURUN_APP_DATA_DIR="${MIRAKURUN_DATA_DIR:-${DATA_DIR}/mirakurun/data}"
+EPG_SQL_DATA_DIR="${EPG_DB_DIR:-${DATA_DIR}/mirakurun/mira_sql}"
+EPGSTATION_CONF_DIR="${EPGSTATION_CONFIG_DIR:-${DATA_DIR}/epgstation/config}"
+EPGSTATION_APP_DATA_DIR="${EPGSTATION_DATA_DIR:-${DATA_DIR}/epgstation/data}"
+EPGSTATION_LOG_DIR="${EPGSTATION_LOGS_DIR:-${DATA_DIR}/epgstation/logs}"
+EPGSTATION_THUMBNAIL_DATA_DIR="${EPGSTATION_THUMBNAIL_DIR:-${DATA_DIR}/epgstation/thumbnail}"
 
 ensure_dir() {
   local dir_path="$1"
@@ -26,13 +33,13 @@ ensure_dir() {
 }
 
 for dir_path in \
-  "${DATA_DIR}/mirakurun/conf" \
-  "${DATA_DIR}/mirakurun/data" \
-  "${DATA_DIR}/mariadb" \
-  "${DATA_DIR}/epgstation/config" \
-  "${DATA_DIR}/epgstation/data" \
-  "${DATA_DIR}/epgstation/logs" \
-  "${DATA_DIR}/epgstation/thumbnail" \
+  "${MIRAKURUN_CONF_DIR}" \
+  "${MIRAKURUN_APP_DATA_DIR}" \
+  "${EPG_SQL_DATA_DIR}" \
+  "${EPGSTATION_CONF_DIR}" \
+  "${EPGSTATION_APP_DATA_DIR}" \
+  "${EPGSTATION_LOG_DIR}" \
+  "${EPGSTATION_THUMBNAIL_DATA_DIR}" \
   "${REC_DIR}"
 do
   ensure_dir "${dir_path}"
@@ -102,7 +109,7 @@ replace_yaml_list_block() {
 copy_from_legacy_or_sample() {
   local filename="$1"
   local sample="$2"
-  local destination="${DATA_DIR}/mirakurun/conf/${filename}"
+  local destination="${MIRAKURUN_CONF_DIR}/${filename}"
 
   if [[ -f "${destination}" ]]; then
     return 0
@@ -133,7 +140,7 @@ detect_tuner_hardware_profile() {
 
 apply_tuner_profile_config() {
   local profile
-  local tuners_file="${DATA_DIR}/mirakurun/conf/tuners.yml"
+  local tuners_file="${MIRAKURUN_CONF_DIR}/tuners.yml"
   local tuners_body
 
   profile="$(detect_tuner_hardware_profile)"
@@ -168,7 +175,7 @@ apply_tuner_profile_config() {
 }
 
 render_mirakurun_server_config() {
-  local dst="${DATA_DIR}/mirakurun/conf/server.yml"
+  local dst="${MIRAKURUN_CONF_DIR}/server.yml"
   local hostname
   local port
 
@@ -192,7 +199,7 @@ render_mirakurun_server_config() {
 }
 
 apply_mirakurun_server_overrides() {
-  local dst="${DATA_DIR}/mirakurun/conf/server.yml"
+  local dst="${MIRAKURUN_CONF_DIR}/server.yml"
   local hostname="${MIRAKURUN_HOSTNAME:-}"
   local port="${MIRAKURUN_PORT:-}"
   local allow_ipv4_ranges="${MIRAKURUN_ALLOW_IPV4_CIDR_RANGES:-10.0.0.0/8 127.0.0.0/8 172.16.0.0/12 192.168.0.0/16}"
@@ -225,7 +232,7 @@ apply_mirakurun_server_overrides() {
 }
 
 render_epgstation_config() {
-  local dst="${DATA_DIR}/epgstation/config/config.yml"
+  local dst="${EPGSTATION_CONF_DIR}/config.yml"
   local db_host
   local db_port
   local db_user
@@ -255,10 +262,10 @@ render_epgstation_config() {
     "${dst}"
 }
 
-copy_if_missing "./epgstation/config/enc.js.template" "${DATA_DIR}/epgstation/config/enc.js"
-copy_if_missing "./epgstation/config/operatorLogConfig.sample.yml" "${DATA_DIR}/epgstation/config/operatorLogConfig.yml"
-copy_if_missing "./epgstation/config/epgUpdaterLogConfig.sample.yml" "${DATA_DIR}/epgstation/config/epgUpdaterLogConfig.yml"
-copy_if_missing "./epgstation/config/serviceLogConfig.sample.yml" "${DATA_DIR}/epgstation/config/serviceLogConfig.yml"
+copy_if_missing "./epgstation/config/enc.js.template" "${EPGSTATION_CONF_DIR}/enc.js"
+copy_if_missing "./epgstation/config/operatorLogConfig.sample.yml" "${EPGSTATION_CONF_DIR}/operatorLogConfig.yml"
+copy_if_missing "./epgstation/config/epgUpdaterLogConfig.sample.yml" "${EPGSTATION_CONF_DIR}/epgUpdaterLogConfig.yml"
+copy_if_missing "./epgstation/config/serviceLogConfig.sample.yml" "${EPGSTATION_CONF_DIR}/serviceLogConfig.yml"
 render_epgstation_config
 render_mirakurun_server_config
 apply_mirakurun_server_overrides

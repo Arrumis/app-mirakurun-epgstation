@@ -16,6 +16,9 @@ GitHub のコミット一覧が英語で分かりにくい場合は、[コミッ
 - `LEGACY_MIRAKURUN_CONF_DIR` は旧環境の `server.yml` `channels.yml` `tuners.yml` を引き継ぐときだけ指定します
 - 親 repo からまとめて使う場合は、`stack.service.env.local` の `GLOBAL__HOST_DATA_ROOT` / `GLOBAL__RECORDED_ROOT` / `APP_MIRAKURUN_EPGSTATION__...` を使います
 
+データ配置は旧コンテナと同じく `mirakurun` と `epgstation` の分割構成を標準にしています。
+HDD移行で `/var/docker` 配下をそのまま使う場合は、`HOST_DATA_DIR=/path/to/var/docker` とします。
+
 ## 方針
 
 - ベースの `compose.yaml` は portable に保つ
@@ -59,7 +62,7 @@ docker compose --env-file .env.local -f compose.yaml -f compose.hardware.pxw3u4.
 
 - `data/mirakurun/conf`
 - `data/mirakurun/data`
-- `data/mariadb`
+- `data/mirakurun/mira_sql`
 - `data/epgstation/config`
 - `data/epgstation/data`
 - `data/epgstation/logs`
