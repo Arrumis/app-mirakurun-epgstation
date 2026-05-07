@@ -1,0 +1,41 @@
+#!/bin/sh
+set -eu
+
+fifo=""
+recpt1_pid=""
+b25_pid=""
+
+cleanup() {
+    trap - INT TERM HUP EXIT
+
+    if [ -n "$recpt1_pid" ]; then
+        kill -TERM "$recpt1_pid" 2>/dev/null || true
+    fi
+    if [ -n "$b25_pid" ]; then
+        kill -TERM "$b25_pid" 2>/dev/null || true
+    fi
+
+    wait "$recpt1_pid" 2>/dev/null || true
+    wait "$b25_pid" 2>/dev/null || true
+
+    if [ -n "$fifo" ]; then
+        rm -f "$fifo"
+    fi
+}
+
+trap cleanup INT TERM HUP EXIT
+
+fifo="$(mktemp -u /tmp/recpt1-b25.XXXXXX)"
+mkfifo "$fifo"
+
+/usr/local/bin/arib-b25-stream-test < "$fifo" &
+b25_pid=$!
+
+/usr/local/bin/recpt1 "$@" - - > "$fifo" &
+recpt1_pid=$!
+
+wait "$b25_pid"
+status=$?
+
+cleanup
+exit "$status"

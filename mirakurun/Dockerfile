@@ -6,6 +6,8 @@ ENV PATH="/opt/bin:${PATH}"
 
 USER root
 
+COPY bin/recpt1-b25 /usr/local/bin/recpt1-b25
+
 # PX-W3U4 / px4_drv は DVB ではなく chardev の /dev/px4video* を使うため、
 # Mirakurun コンテナ内に recpt1 を追加する。
 RUN set -eux; \
@@ -13,6 +15,10 @@ RUN set -eux; \
     runtime_deps="ca-certificates pcscd libpcsclite1 libccid pcsc-tools"; \
     apt-get update; \
     apt-get install -y --no-install-recommends ${build_deps} ${runtime_deps}; \
+    npm install -g arib-b25-stream-test@0.2.9; \
+    mkdir -p /opt/bin; \
+    chmod 0755 /usr/local/bin/recpt1-b25; \
+    ln -sf /usr/local/bin/arib-b25-stream-test /opt/bin/arib-b25-stream-test; \
     git clone --depth=1 https://github.com/stz2012/recpt1.git /tmp/recpt1; \
     cd /tmp/recpt1/recpt1; \
     ./autogen.sh; \

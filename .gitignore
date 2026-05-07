@@ -37,6 +37,8 @@ data/epgstation/thumbnail/*
 data/mirakurun/mira_sql/*
 
 mirakurun/*
+!mirakurun/bin/
+!mirakurun/bin/recpt1-b25
 !mirakurun/data/
 mirakurun/data/*
 !mirakurun/data/.gitkeep

@@ -6,28 +6,28 @@
   types:
     - BS
     - CS
-  command: /usr/local/bin/recpt1 --device /dev/px4video0 --lnb 15 <channel> - -
-  decoder: /opt/bin/arib-b25-stream-test
+  command: >-
+    /usr/local/bin/recpt1-b25 --device /dev/px4video0 --lnb 15 <channel>
   isDisabled: false
 
 - name: PX-W3U4_S2
   types:
     - BS
     - CS
-  command: /usr/local/bin/recpt1 --device /dev/px4video1 --lnb 15 <channel> - -
-  decoder: /opt/bin/arib-b25-stream-test
+  command: >-
+    /usr/local/bin/recpt1-b25 --device /dev/px4video1 --lnb 15 <channel>
   isDisabled: false
 
 - name: PX-W3U4_T1
   types:
     - GR
-  command: /usr/local/bin/recpt1 --device /dev/px4video2 <channel> - -
-  decoder: /opt/bin/arib-b25-stream-test
+  command: >-
+    /usr/local/bin/recpt1-b25 --device /dev/px4video2 <channel>
   isDisabled: false
 
 - name: PX-W3U4_T2
   types:
     - GR
-  command: /usr/local/bin/recpt1 --device /dev/px4video3 <channel> - -
-  decoder: /opt/bin/arib-b25-stream-test
+  command: >-
+    /usr/local/bin/recpt1-b25 --device /dev/px4video3 <channel>
   isDisabled: false

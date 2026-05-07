@@ -159,7 +159,8 @@ apply_tuner_profile_config() {
         )"
       fi
 
-      if [[ ! -f "${tuners_file}" || "${tuners_body}" == "[]" || "${FORCE_TUNERS:-0}" == "1" ]]; then
+      if [[ ! -f "${tuners_file}" || "${tuners_body}" == "[]" || "${FORCE_TUNERS:-0}" == "1" ]] \
+        || grep -Eq '(/dev/dvb|dvbv5-zap)' "${tuners_file}" 2>/dev/null; then
         cp "./mirakurun/conf/tuners.pxw3u4.yml.example" "${tuners_file}"
         echo "Applied PX-W3U4 tuners.yml: ${tuners_file}"
       else
