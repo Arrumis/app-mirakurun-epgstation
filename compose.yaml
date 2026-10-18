@@ -8,8 +8,7 @@ services:
         MIRAKURUN_BASE_IMAGE: "${MIRAKURUN_BASE_IMAGE:-chinachu/mirakurun}"
     restart: unless-stopped
     ports:
-      - "${MIRAKURUN_PORT:-40772}:40772"
-      - "${MIRAKURUN_DEBUG_PORT:-9229}:9229"
+      - "127.0.0.1:${MIRAKURUN_PORT:-40772}:40772"
     environment:
       TZ: "${TZ:-Asia/Tokyo}"
     volumes:
@@ -22,12 +21,12 @@ services:
         max-size: 10m
 
   epg-sql:
-    image: mariadb:10.5
+    image: "${EPG_DB_IMAGE:?移行確認済みのDBイメージを設定してください}"
     restart: unless-stopped
     environment:
       MYSQL_USER: "${EPG_DB_USER:-epgstation}"
-      MYSQL_PASSWORD: "${EPG_DB_PASSWORD:-change-me}"
-      MYSQL_ROOT_PASSWORD: "${EPG_DB_ROOT_PASSWORD:-change-me-root}"
+      MYSQL_PASSWORD: "${EPG_DB_PASSWORD:?固有のパスワードを設定してください}"
+      MYSQL_ROOT_PASSWORD: "${EPG_DB_ROOT_PASSWORD:?固有のパスワードを設定してください}"
       MYSQL_DATABASE: "${EPG_DB_NAME:-epgstation}"
       TZ: "${TZ:-Asia/Tokyo}"
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --performance-schema=false --expire_logs_days=1
@@ -49,8 +48,8 @@ services:
     environment:
       TZ: "${TZ:-Asia/Tokyo}"
     ports:
-      - "${EPGSTATION_PORT:-8888}:8888"
-      - "${EPGSTATION_PREVIEW_PORT:-8889}:8889"
+      - "127.0.0.1:${EPGSTATION_PORT:-8888}:8888"
+      - "127.0.0.1:${EPGSTATION_PREVIEW_PORT:-8889}:8889"
     user: "${EPGSTATION_UID:-1000}:${EPGSTATION_GID:-1000}"
     volumes:
       - "${EPGSTATION_CONFIG_DIR:-${HOST_DATA_DIR:-./data}/epgstation/config}:/app/config"

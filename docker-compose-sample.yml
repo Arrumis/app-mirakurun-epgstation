@@ -6,8 +6,7 @@ services:
             - SYS_ADMIN
             - SYS_NICE
         ports:
-            - "40772:40772"
-            - "9229:9229"
+            - "127.0.0.1:40772:40772"
         volumes:
             - ./mirakurun/conf:/app-config
             - ./mirakurun/data:/app-data
@@ -24,14 +23,14 @@ services:
                 max-size: 10m
 
     mysql:
-        image: mariadb:10.5
+        image: mariadb:11.4
         # image: mysql:8.0 # 囲み文字を使用する場合
         volumes:
             - mysql-db:/var/lib/mysql
         environment:
             MYSQL_USER: epgstation
-            MYSQL_PASSWORD: epgstation
-            MYSQL_ROOT_PASSWORD: epgstation
+            MYSQL_PASSWORD: "${EPG_DB_PASSWORD:?固有のパスワードを設定してください}"
+            MYSQL_ROOT_PASSWORD: "${EPG_DB_ROOT_PASSWORD:?固有のパスワードを設定してください}"
             MYSQL_DATABASE: epgstation
             TZ: "Asia/Tokyo"
         command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --performance-schema=false --expire_logs_days=1 # for mariadb
@@ -58,8 +57,8 @@ services:
             - mirakurun
             - mysql
         ports:
-            - "8888:8888"
-            - "8889:8889"
+            - "127.0.0.1:8888:8888"
+            - "127.0.0.1:8889:8889"
 #         user: "1000:1000"
 #         devices:
 #             - /dev/dri:/dev/dri

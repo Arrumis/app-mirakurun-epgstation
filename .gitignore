@@ -61,3 +61,6 @@ epgstation/thumbnail/*
 
 recorded/*
 !recorded/.gitkeep
+
+__pycache__/
+*.pyc

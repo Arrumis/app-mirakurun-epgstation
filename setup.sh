@@ -1,11 +1,7 @@
-#!/bin/sh
-
-git clone https://github.com/l3tnun/docker-mirakurun-epgstation.git
-cd docker-mirakurun-epgstation
-cp docker-compose-sample.yml docker-compose.yml
-cp epgstation/config/enc.js.template epgstation/config/enc.js
-cp epgstation/config/config.yml.template epgstation/config/config.yml
-cp epgstation/config/operatorLogConfig.sample.yml epgstation/config/operatorLogConfig.yml
-cp epgstation/config/epgUpdaterLogConfig.sample.yml epgstation/config/epgUpdaterLogConfig.yml
-cp epgstation/config/serviceLogConfig.sample.yml epgstation/config/serviceLogConfig.yml
-docker-compose run --rm -e SETUP=true mirakurun
+#!/usr/bin/env bash
+set -euo pipefail
+umask 077
+cd "$(dirname "${BASH_SOURCE[0]}")"
+python3 scripts/init-secrets.py
+bash scripts/init-data-dirs.sh
+echo "初期設定が完了しました。内容を確認後、docker compose --env-file .env.local up -d --build で起動してください。"

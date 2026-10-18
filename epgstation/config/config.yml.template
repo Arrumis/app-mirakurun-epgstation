@@ -12,7 +12,7 @@ mysql:
     host: mysql
     port: 3306
     user: epgstation
-    password: epgstation
+    password: __EPG_DB_PASSWORD__
     database: epgstation
 
 epgUpdateIntervalTime: 10

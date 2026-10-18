@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+umask 077
 
 if [[ -f ".env.local" ]]; then
   set -a
@@ -237,14 +238,13 @@ render_epgstation_config() {
   local db_host
   local db_port
   local db_user
-  local db_password
   local db_name
   local mirakurun_url
 
   db_host="$(escape_sed_replacement "${EPG_DB_HOST:-epg-sql}")"
   db_port="$(escape_sed_replacement "${EPG_DB_PORT:-3306}")"
   db_user="$(escape_sed_replacement "${EPG_DB_USER:-epgstation}")"
-  db_password="$(escape_sed_replacement "${EPG_DB_PASSWORD:-change-me}")"
+  : "${EPG_DB_PASSWORD:?固有の録画DBパスワードを設定してください}"
   db_name="$(escape_sed_replacement "${EPG_DB_NAME:-epgstation}")"
   mirakurun_url="$(escape_sed_replacement "${EPG_MIRAKURUN_URL:-http://mirakurun:40772/}")"
 
@@ -252,15 +252,30 @@ render_epgstation_config() {
     return 0
   fi
 
+  case "${EPG_DB_PASSWORD}" in
+    change-me|change-me-root|epgstation|password)
+      echo "既知の初期パスワードは使用できません。" >&2
+      exit 1
+      ;;
+  esac
   copy_if_missing "./epgstation/config/config.yml.template" "${dst}"
   sed -i \
     -e "s|^mirakurunPath: .*|mirakurunPath: ${mirakurun_url}|" \
     -e "0,/^    host: /s|^    host: .*|    host: ${db_host}|" \
     -e "0,/^    port: /s|^    port: .*|    port: ${db_port}|" \
     -e "0,/^    user: /s|^    user: .*|    user: ${db_user}|" \
-    -e "0,/^    password: /s|^    password: .*|    password: ${db_password}|" \
     -e "0,/^    database: /s|^    database: .*|    database: ${db_name}|" \
     "${dst}"
+  EPG_DB_PASSWORD="${EPG_DB_PASSWORD}" python3 - "${dst}" <<'PYCFG'
+import json
+import os
+from pathlib import Path
+import re
+import sys
+p = Path(sys.argv[1])
+p.write_text(re.sub(r"^(    password:) .*", lambda m: m.group(1) + " " + json.dumps(os.environ["EPG_DB_PASSWORD"]), p.read_text(), count=1, flags=re.M))
+p.chmod(0o600)
+PYCFG
 }
 
 copy_if_missing "./epgstation/config/enc.js.template" "${EPGSTATION_CONF_DIR}/enc.js"
