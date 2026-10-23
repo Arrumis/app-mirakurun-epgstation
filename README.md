@@ -3,6 +3,23 @@
 Mirakurun と EPGStation を Docker で動かすためのリポジトリです。
 チューナー機器の設定、番組表データ、録画ファイルを指定した保存先へ置けます。
 
+## Node.jsのセキュリティ更新とEPGStation v3への移行
+
+2026年10月21日の脆弱性修正に対応し、両コンテナのNode.jsを24.22.1に固定しています。
+EPGStationはNode.js 24に対応する公式の3.0.0-beta2を使用し、イメージのdigestも固定しています。
+ベータ版のため、更新前には次の移行手順と動作確認が必要です。
+
+1. 録画・エンコードが実行中でないことを確認し、EPGStationを停止します。
+2. DBを `mariadb-dump` で退避し、実際に使用している `config/` と `data/` もバックアップします。録画ファイルは移動・削除しません。
+3. `config/enc.js` をこのリポジトリの `epgstation/config/enc.js.template` と見比べます。v3ではES moduleになるため、`require` を `import` に変更します。独自のエンコード設定は残してください。
+4. 可能ならバックアップDBを別のDBへ復元し、候補イメージで起動と録画情報の一致を確認します。本番DBへ検証用アプリを重複接続しないでください。
+5. `docker compose --env-file .env.local build mirakurun epgstation` の後、録画のない時間に `docker compose --env-file .env.local up -d --no-deps mirakurun epgstation` を実行します。
+6. 両コンテナの `node --version`、番組表、予約、録画済み一覧、再生、短時間の録画とエンコードを確認します。
+
+v3は起動時にDBを自動移行します。v2へ戻す場合は、旧イメージへの切り替えに加えて、停止中に更新前のDBと設定を復元してください。
+DBサーバー自体は今回の更新で変更する必要はありません。
+公式の[移行手順](https://github.com/l3tnun/EPGStation/blob/master/docs/migration-v2-to-v3.md)も参照してください。
+
 ## 使い方
 
 通常の DVB 系チューナーを使う場合:
